@@ -1,4 +1,5 @@
 using CUDAapi
+using Libdl
 
 const config_path = joinpath(@__DIR__, "ext.jl")
 const previous_config_path = config_path * ".bak"
@@ -34,13 +35,21 @@ function main()
 
     ## discover stuff
 
-    toolkit_dirs = CUDAapi.find_toolkit()
+    if !haskey(ENV, "NCCL_DIR")
+        toolkit_dirs = CUDAapi.find_toolkit()
+    else
+        toolkit_dirs = [ENV["NCCL_DIR"]]
+    end
 
     config[:libnccl] = CUDAapi.find_cuda_library("nccl", toolkit_dirs)
     if config[:libnccl] == nothing
         error("could not find NCCL")
     end
 
+    ptr = Libdl.dlsym(Libdl.dlopen(config[:libnccl]), :ncclGetVersion; throw_error=false)
+    if ptr === nothing
+        error("NCCL predates 2.0 -- not supported, you can set NCCL_DIR")
+    end
     config[:configured] = true
 
 

@@ -13,6 +13,13 @@ if !configured
 end
 
 include("base.jl")
+
+function version()
+    version = Ref{Cint}()
+    @apicall(:ncclGetVersion, (Ref{Cint},), version)
+    version[]
+end
+
 include("communicator.jl")
 
 end
