@@ -40,9 +40,12 @@ macro apicall(fun, argtypes, args...)
 end
 
 function description(err::NCCLError)
-    str_ref = Ref{Cstring}()
-    @apicall(:ncclGetErrorString, (ncclResult_t, Ptr{Cstring}), err.code, str_ref)
-    unsafe_string(str_ref[])
+    str = ccall((:ncclGetErrorString, libnccl), Cstring, (ncclResult_t,), err.code)
+    unsafe_string(str)
+end
+
+function Base.show(io::IO, err::NCCLError)
+    @printf(io, "NCCL error %d: %s", err.code, description(err))
 end
 
 function Base.showerror(io::IO, err::NCCLError)

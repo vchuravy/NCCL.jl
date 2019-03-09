@@ -7,4 +7,8 @@ NCCL.jl
 Status
 ------
 
-This package is very incomplete, and completely untested.
+This package is under development and thoroughly tested
+
+For information about NCCL see https://docs.nvidia.com/deeplearning/sdk/nccl-developer-guide/docs/index.html
+
+

@@ -1,9 +1,15 @@
 # Communicator
 
-
 const NCCL_UNIQUE_ID_BYTES = 128
 const ncclUniqueId_t = NTuple{NCCL_UNIQUE_ID_BYTES, Cchar}
 
+"""
+    UniqueID()
+
+Generates an Id to be used in `Communicator`. `UniqueID` should be
+called once and the Id should be distributed to all ranks in the
+communicator before calling `Communicator(nranks, uid, rank)`.
+"""
 struct UniqueID
     internal::ncclUniqueId_t
 
@@ -25,10 +31,19 @@ struct Communicator
 end
 
 # creates a new communicator (multi thread/process version)
+"""
+   Communicator(nranks, uid, rank)
+
+Creates a new Communicator (multi thread/process version)
+`rank` must be between `0` and `nranks-1` and unique within a communicator
+clique. Each rank is associated to a CUDA device which has to be set before
+calling `Communicator`. Implicitly synchroniszed with other ranks so it must
+be called by different threads/processes or used within `group`.
+"""
 function Communicator(nranks, comm_id, rank)
     handle_ref = Ref{ncclComm_t}()
     @apicall(:ncclCommInitRank, (Ptr{ncclComm_t}, Cint, ncclUniqueId_t, Cint), 
-             handle_ref,nranks, comm_id, rank)
+             handle_ref, nranks, comm_id, rank)
 
     Communicator(handle_ref[])
 end 
@@ -37,8 +52,40 @@ end
 function Communicator(devices)
     ndev = length(devices)
     comms = Vector{ncclComm_t}(undef, ndev)
-    devlist = Cint[dev.ordinal for dev in devices]
+    devlist = Cint[dev.handle for dev in devices]
     @apicall(:ncclCommInitAll, (Ptr{ncclComm_t}, Cint, Ptr{Cint}), comms, ndev, devlist)
     Communicator.(comms)
+end
+
+function destroy(comm::Communicator)
+    @apicall(:ncclCommDestroy, (Ptr{ncclComm_t},), comm)
+end
+
+function abort(comm::Communicator)
+    @apicall(:ncclCommAbort, (Ptr{ncclComm_t},), comm)
+end
+
+function getError(comm::Communicator)
+    ref = Ref{ncclResult_t}()
+    @apicall(:ncclCommGetAsyncError, (Ptr{ncclComm_t}, Ref{ncclResult_t}), comm, ref)
+    return NCCLError(ref[])
+end
+
+function count(comm::Communicator)
+    ref = Ref{Cint}()
+    @apicall(:ncclCommCount, (Ptr{ncclComm_t}, Ref{Cint}), comm, ref)
+    return ref[]
+end
+
+function rank(comm::Communicator)
+    ref = Ref{Cint}()
+    @apicall(:ncclUserRank, (Ptr{ncclComm_t}, Ref{Cint}), comm, ref)
+    return ref[]
+end
+
+function device(comm::Communicator)
+    ref = Ref{Cint}()
+    @apicall(:ncclCommCuDevice, (Ptr{ncclComm_t}, Ref{Cint}), comm, ref)
+    return CUDAdrv.CuDevice(ref[])
 end
 

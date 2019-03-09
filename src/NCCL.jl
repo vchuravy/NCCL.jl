@@ -1,7 +1,11 @@
 module NCCL
 
 import CUDAdrv
+import CuArrays
 using Printf
+
+import CUDAdrv: CuPtr, cudaStream_t
+import CuArrays: CuArray
 
 const ext = joinpath(dirname(@__DIR__), "deps", "ext.jl")
 isfile(ext) || error("NCCL.jl has not been built, please run Pkg.build(\"NCCL\").")
@@ -21,5 +25,7 @@ function version()
 end
 
 include("communicator.jl")
+include("group.jl")
+include("collectives.jl")
 
 end
