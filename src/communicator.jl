@@ -21,6 +21,7 @@ const ncclComm_t = Ptr{Cvoid}
 
 struct Communicator
     handle::ncclComm_t
+    Communicator(handle::ncclComm_t) = new(handle)
 end
 
 # creates a new communicator (multi thread/process version)
