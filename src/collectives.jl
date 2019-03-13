@@ -11,10 +11,10 @@ datatype(::Type{Float64}) = ncclDatatype_t(8)
 datatype(T::DataType) = error("NCCL doesn't support datatype $T")
 
 const ncclRedOp_t = Cint
-op(::Type{::typeof(+)})   = ncclRedOp_t(0)
-op(::Type{::typeof(*)})   = ncclRedOp_t(1)
-op(::Type{::typeof(min)}) = ncclRedOp_t(2)
-op(::Type{::typeof(max)}) = ncclRedOp_t(3)
+op(::Type{typeof(+)})   = ncclRedOp_t(0)
+op(::Type{typeof(*)})   = ncclRedOp_t(1)
+op(::Type{typeof(min)}) = ncclRedOp_t(2)
+op(::Type{typeof(max)}) = ncclRedOp_t(3)
 op(T::DataType) = error("NCCL doesn't support reduction operator $T")
 
 function allReduce(::F, send::CuArray{T}, recv::CuArray{T}, comm::Communicator, stream=CUDAdrv.CuDefaultStream())
