@@ -17,10 +17,10 @@ op(::Type{typeof(min)}) = ncclRedOp_t(2)
 op(::Type{typeof(max)}) = ncclRedOp_t(3)
 op(T::DataType) = error("NCCL doesn't support reduction operator $T")
 
-function allReduce(::F, send::CuArray{T}, recv::CuArray{T}, comm::Communicator, stream=CUDAdrv.CuDefaultStream()) where T
+function allReduce(::F, send::CuArray{T}, recv::CuArray{T}, comm::Communicator, stream=CUDAdrv.CuDefaultStream()) where {F, T}
     @assert size(send) == size(recv)
-    @apicall(:ncclAllReduce, (Ptr{CuPtr}, Ptr{CuPtr}, Csize_t, ncclDatatype_t, ncclRedOpt_t, nccl_Comm_t, CuStream_t),
-                             send, rec, length(send), datatype(T), comm, stream)
+    @apicall(:ncclAllReduce, (Ptr{CuPtr}, Ptr{CuPtr}, Csize_t, ncclDatatype_t, ncclRedOp_t, ncclComm_t, CuStream_t),
+                             send, rec, length(send), datatype(T), op(F), comm, stream)
 end
 
 
