@@ -20,7 +20,7 @@ op(T::DataType) = error("NCCL doesn't support reduction operator $T")
 function allReduce(::F, send::CuArray{T}, recv::CuArray{T}, comm::Communicator, stream=CUDAdrv.CuDefaultStream()) where {F, T}
     @assert size(send) == size(recv)
     @apicall(:ncclAllReduce, (CuPtr, CuPtr, Csize_t, ncclDatatype_t, ncclRedOp_t, ncclComm_t, CuStream_t),
-                             send, rec, length(send), datatype(T), op(F), comm, stream)
+                             send, recv, length(send), datatype(T), op(F), comm, stream)
 end
 
 
