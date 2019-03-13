@@ -4,7 +4,7 @@ import CUDAdrv
 import CuArrays
 using Printf
 
-import CUDAdrv: CuPtr, cudaStream_t
+import CUDAdrv: CuPtr, CuStream_t
 import CuArrays: CuArray
 
 const ext = joinpath(dirname(@__DIR__), "deps", "ext.jl")
