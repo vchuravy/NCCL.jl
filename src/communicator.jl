@@ -48,6 +48,8 @@ function Communicator(nranks, comm_id, rank)
     Communicator(handle_ref[])
 end 
 
+Base.cconvert(::Type{ncclComm_t}, comm::Communicator) = comm.handle
+
 # creates a clique of communicators (single process version)
 function Communicator(devices)
     ndev = length(devices)
