@@ -60,34 +60,34 @@ function Communicator(devices)
 end
 
 function destroy(comm::Communicator)
-    @apicall(:ncclCommDestroy, (Ptr{ncclComm_t},), comm)
+    @apicall(:ncclCommDestroy, (ncclComm_t,), comm)
 end
 
 function abort(comm::Communicator)
-    @apicall(:ncclCommAbort, (Ptr{ncclComm_t},), comm)
+    @apicall(:ncclCommAbort, (ncclComm_t,), comm)
 end
 
 function getError(comm::Communicator)
     ref = Ref{ncclResult_t}()
-    @apicall(:ncclCommGetAsyncError, (Ptr{ncclComm_t}, Ref{ncclResult_t}), comm, ref)
+    @apicall(:ncclCommGetAsyncError, (ncclComm_t, Ref{ncclResult_t}), comm, ref)
     return NCCLError(ref[])
 end
 
 function count(comm::Communicator)
     ref = Ref{Cint}()
-    @apicall(:ncclCommCount, (Ptr{ncclComm_t}, Ref{Cint}), comm, ref)
+    @apicall(:ncclCommCount, (ncclComm_t, Ref{Cint}), comm, ref)
     return ref[]
 end
 
 function rank(comm::Communicator)
     ref = Ref{Cint}()
-    @apicall(:ncclUserRank, (Ptr{ncclComm_t}, Ref{Cint}), comm, ref)
+    @apicall(:ncclUserRank, (ncclComm_t, Ref{Cint}), comm, ref)
     return ref[]
 end
 
 function device(comm::Communicator)
     ref = Ref{Cint}()
-    @apicall(:ncclCommCuDevice, (Ptr{ncclComm_t}, Ref{Cint}), comm, ref)
+    @apicall(:ncclCommCuDevice, (ncclComm_t, Ref{Cint}), comm, ref)
     return CUDAdrv.CuDevice(ref[])
 end
 
